@@ -130,6 +130,14 @@ def get_subquery_parentheses(
                     subquery.append(SubQueryTuple(tk.left, tk.left.get_real_name()))
                 if is_subquery(tk.right):
                     subquery.append(SubQueryTuple(tk.right, tk.right.get_real_name()))
+            elif (
+                isinstance(tk, Function)
+                and (tk.get_real_name() or "").upper() == "EXISTS"
+            ):
+                # sqlparse groups EXISTS(...) without a space as a function.
+                _, predicate = tk.token_next_by(i=Parenthesis)
+                if is_subquery(predicate):
+                    subquery.append(SubQueryTuple(predicate, None))
             elif is_subquery(tk):
                 subquery.append(SubQueryTuple(tk, token.get_real_name()))
     elif isinstance(target, Function):
